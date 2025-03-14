@@ -2,545 +2,124 @@
 
 A comprehensive implementation of Model Context Protocol (MCP) servers for local hosting on Linux, with support for advanced models like gemma3:27b and qwq:32b.
 
-## Table of Contents
+## Overview
 
-- [Introduction](#introduction)
-- [Overview and Comparison of MCP Servers](#overview-and-comparison-of-mcp-servers)
-- [Local Deployment Guide](#local-deployment-guide)
-- [Web Interface Implementation](#web-interface-implementation)
-- [Model Integration](#model-integration)
-- [Best Practices and Troubleshooting](#best-practices-and-troubleshooting)
-- [References](#references)
+LocalMCP provides a fully self-hosted implementation of the Model Context Protocol (MCP) for integrating AI models with various services and tools. This repository focuses on:
 
-## Introduction
+- **Self-hosting**: Complete control over your data and infrastructure
+- **Web-based interface**: Monitor and interact with MCP services through a browser
+- **Advanced model integration**: Support for gemma3:27b and qwq:32b models
+- **Modular architecture**: Easily extensible with new services and tools
 
-The Model Context Protocol (MCP) is a standardized protocol introduced by Anthropic for connecting AI systems with external tools and services. This guide provides a comprehensive walkthrough for implementing MCP servers locally on Linux, with a focus on leveraging advanced models like gemma3:27b and qwq:32b through a web-based interface.
+## Repository Structure
 
-### What is MCP?
+```
+LocalMCP/
+├── mcp-services/           # Service-specific MCP implementations
+│   ├── gmail/              # Gmail integration
+│   ├── google-drive/       # Google Drive integration
+│   ├── discord/            # Discord integration
+│   ├── slack/              # Slack integration
+│   ├── twitter/            # Twitter (X.com) integration
+│   ├── bluesky/            # Bluesky integration
+│   ├── telegram/           # Telegram integration
+│   ├── signal/             # Signal integration
+│   ├── reddit/             # Reddit integration
+│   └── notion/             # Notion integration
+├── models/                 # Model integration implementations
+│   ├── gemma3-27b/         # Gemma3 27B model integration
+│   └── qwq-32b/            # QWQ 32B model integration
+└── web-interface/          # Web-based monitoring and control interface
+```
 
-MCP (Model Context Protocol) is a standard that enables AI models to interact with external tools and services in a consistent way. It provides a structured format for:
+## Key Features
 
-- Tool registration and discovery
-- Request/response formatting
-- Error handling
-- Authentication
+### MCP Service Implementations
 
-By implementing MCP servers locally, you can create custom integrations between AI models and your own tools, services, or data sources, enhancing the capabilities of models while maintaining complete control over your data and infrastructure.
+Each service folder contains a complete FastAPI-based MCP server implementation with:
 
-## Overview and Comparison of MCP Servers
+- Dynamic tool registration
+- Authentication handling
+- Comprehensive logging
+- Error management
+- Health monitoring
 
-### Top 5 MCP Servers for Self-Hosting
+### Model Integration
 
-1. **Composio MCP Server**
-   - **Key Features**: Extensive tool library, managed authentication, scalable architecture
-   - **Best For**: Production environments, teams requiring multiple integrations
-   - **Limitations**: More complex setup for simple use cases
-   - **GitHub**: [ComposioHQ/composio](https://github.com/ComposioHQ/composio)
+The repository includes optimized implementations for:
 
-2. **Fern MCP Server**
-   - **Key Features**: Lightweight, easy setup, good documentation
-   - **Best For**: Individual developers, simple integrations
-   - **Limitations**: Fewer built-in tools compared to Composio
+- **gemma3:27b**: Google's 27 billion parameter model
+- **qwq:32b**: Advanced 32 billion parameter model
 
-3. **Athina MCP Server**
-   - **Key Features**: Focus on evaluation and monitoring, analytics dashboard
-   - **Best For**: Teams focused on model evaluation and improvement
-   - **Limitations**: More specialized than general-purpose servers
+Both implementations feature:
 
-4. **LangChain MCP Server**
-   - **Key Features**: Integration with LangChain ecosystem, chain-of-thought capabilities
-   - **Best For**: Projects already using LangChain
-   - **Limitations**: Requires familiarity with LangChain concepts
+- 4-bit quantization for VRAM efficiency
+- Flash Attention 2 support
+- Asynchronous processing
+- Memory management optimizations
 
-5. **Open Interpreter MCP Server**
-   - **Key Features**: Code execution focus, sandbox environment
-   - **Best For**: Development environments, code-heavy workflows
-   - **Limitations**: More focused on code execution than general tool use
+### Web Interface
 
-### Comparison Table
+A comprehensive web-based interface for:
 
-| Feature | Composio | Fern | Athina | LangChain | Open Interpreter |
-|---------|----------|------|--------|-----------|-----------------|
-| Ease of Setup | ★★★☆☆ | ★★★★★ | ★★★★☆ | ★★★☆☆ | ★★★★☆ |
-| Tool Library | ★★★★★ | ★★★☆☆ | ★★★☆☆ | ★★★★☆ | ★★☆☆☆ |
-| Documentation | ★★★★☆ | ★★★★★ | ★★★★☆ | ★★★☆☆ | ★★★☆☆ |
-| Performance | ★★★★★ | ★★★★☆ | ★★★★☆ | ★★★☆☆ | ★★★★☆ |
-| Community Support | ★★★★★ | ★★★☆☆ | ★★★☆☆ | ★★★★☆ | ★★★☆☆ |
+- Monitoring service health
+- Testing MCP tools
+- Managing model loading/unloading
+- Viewing system logs
+- Controlling service configuration
 
-## Local Deployment Guide
+## Hardware Requirements
 
-This section provides step-by-step instructions for deploying MCP servers locally on Linux, focusing on the Composio MCP server as our primary example due to its comprehensive feature set and active development.
+This implementation is optimized for:
+
+- Linux server environment
+- 3x NVIDIA 3090 GPUs (64GB VRAM total)
+- 256GB RAM
+- Local LAN deployment
+
+## Getting Started
 
 ### Prerequisites
 
-- Linux server (tested on Ubuntu 20.04/22.04)
-- NVIDIA GPUs (3x 3090 with 64GB VRAM total)
-- 256GB RAM
+- Linux server (Ubuntu recommended)
+- NVIDIA GPUs with appropriate drivers
 - Conda for environment management
 - Python 3.8+
-- Node.js (v16 or later)
-- npm or yarn
 
-### Step 1: Setting Up the Conda Environment
+### Basic Setup
 
-First, create a dedicated conda environment for your MCP server:
+1. Clone this repository
+2. Set up conda environments for services and models
+3. Configure service authentication
+4. Start the web interface
+5. Access the dashboard through your browser
 
-```bash
-# Create conda environment
-conda create -n mcp-server python=3.10
-conda activate mcp-server
+## Service Configuration
 
-# Install PyTorch with CUDA support
-conda install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia
+Each MCP service requires specific configuration:
 
-# Install other dependencies
-pip install transformers accelerate fastapi uvicorn pydantic
-```
+- **Gmail/Google Drive**: OAuth2 credentials
+- **Discord/Slack**: Bot tokens and permissions
+- **Twitter/Bluesky**: API keys
+- **Telegram/Signal**: Bot tokens and phone numbers
+- **Reddit/Notion**: API credentials
 
-### Step 2: Basic MCP Server Implementation
+## Model Optimization
 
-Create a directory for your MCP server and set up the basic structure:
+The implementation includes several optimizations for running large models on consumer hardware:
 
-```bash
-mkdir -p ~/local-mcp-server/src
-cd ~/local-mcp-server
-```
+- Quantization (4-bit precision)
+- Efficient attention mechanisms
+- Memory management
+- Multi-GPU distribution
 
-Create a file named `src/server.py` with the following content:
+## Contributing
 
-```python
-import json
-import logging
-from typing import Dict, List, Optional, Any, Union
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-import uvicorn
-from fastapi import FastAPI, HTTPException, Depends, Header, Request
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field
+## License
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    handlers=[logging.StreamHandler()]
-)
-logger = logging.getLogger(__name__)
-
-# Initialize FastAPI app
-app = FastAPI(title="Local MCP Server", description="A self-hosted MCP server for AI model integration")
-
-# Add CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Modify this in production to specific origins
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# MCP Models
-class ToolParameter(BaseModel):
-    type: str
-    description: str
-    enum: Optional[List[str]] = None
-    
-class ToolParameters(BaseModel):
-    type: str = "object"
-    properties: Dict[str, ToolParameter]
-    required: List[str] = []
-
-class Tool(BaseModel):
-    name: str
-    description: str
-    parameters: ToolParameters
-
-class MCPServerInfo(BaseModel):
-    server_name: str
-    server_version: str
-    server_description: str
-    tools: List[Tool] = []
-
-# Server state
-server_info = MCPServerInfo(
-    server_name="Local MCP Server",
-    server_version="1.0.0",
-    server_description="A self-hosted MCP server for AI model integration",
-    tools=[]
-)
-
-# Tool registry
-tools = {}
-
-# Routes
-@app.get("/")
-async def root():
-    return {"message": "Local MCP Server is running"}
-
-@app.get("/mcp")
-async def get_mcp_info():
-    return server_info
-
-@app.post("/mcp/tools/{tool_name}")
-async def execute_tool(tool_name: str, request: Request):
-    if tool_name not in tools:
-        raise HTTPException(status_code=404, detail=f"Tool '{tool_name}' not found")
-    
-    # Parse request body
-    body = await request.json()
-    
-    try:
-        # Execute the tool handler
-        result = tools[tool_name](body)
-        return {"result": result}
-    except Exception as e:
-        logger.error(f"Error executing tool {tool_name}: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-# Tool registration function
-def register_tool(name: str, description: str, parameters: Dict, handler_func):
-    tool_params = ToolParameters(
-        type="object",
-        properties={
-            k: ToolParameter(**v) for k, v in parameters.items()
-        },
-        required=[k for k, v in parameters.items() if v.get("required", False)]
-    )
-    
-    tool = Tool(
-        name=name,
-        description=description,
-        parameters=tool_params
-    )
-    
-    # Add to server info
-    server_info.tools.append(tool)
-    
-    # Register handler
-    tools[name] = handler_func
-    
-    logger.info(f"Registered tool: {name}")
-
-# Register a simple echo tool as an example
-def echo_handler(params):
-    return params.get("message", "No message provided")
-
-register_tool(
-    name="echo",
-    description="Echoes back the input message",
-    parameters={
-        "message": {
-            "type": "string",
-            "description": "Message to echo",
-            "required": True
-        }
-    },
-    handler_func=echo_handler
-)
-
-# Main entry point
-if __name__ == "__main__":
-    uvicorn.run("server:app", host="0.0.0.0", port=8000, reload=True)
-```
-
-### Step 3: Configuration and Environment Setup
-
-Create a configuration file `config.py`:
-
-```python
-import os
-from pathlib import Path
-
-# Base paths
-BASE_DIR = Path(__file__).resolve().parent
-MODELS_DIR = os.environ.get("MODELS_DIR", BASE_DIR / "models")
-
-# Server configuration
-HOST = os.environ.get("HOST", "0.0.0.0")
-PORT = int(os.environ.get("PORT", 8000))
-LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
-
-# Security
-ENABLE_AUTH = os.environ.get("ENABLE_AUTH", "false").lower() == "true"
-AUTH_SECRET = os.environ.get("AUTH_SECRET", "your_default_secret_key")
-
-# Model configuration
-GEMMA_MODEL_PATH = os.environ.get("GEMMA_MODEL_PATH", "google/gemma-3-27b")
-QWQ_MODEL_PATH = os.environ.get("QWQ_MODEL_PATH", "qwq/qwq-32b")  # Replace with actual path
-
-# GPU configuration
-DEVICE_MAP = "auto"  # Uses all available GPUs
-PRECISION = "float16"  # Options: float32, float16, int8, int4
-```
-
-### Step 4: Creating a Systemd Service
-
-To ensure your MCP server runs as a service and starts automatically on boot, create a systemd service file:
-
-```bash
-sudo nano /etc/systemd/system/mcp-server.service
-```
-
-Add the following content:
-
-```
-[Unit]
-Description=Local MCP Server
-After=network.target
-
-[Service]
-User=your_username
-Group=your_username
-WorkingDirectory=/home/your_username/local-mcp-server
-ExecStart=/home/your_username/miniconda3/envs/mcp-server/bin/python src/server.py
-Restart=on-failure
-RestartSec=5s
-
-[Install]
-WantedBy=multi-user.target
-```
-
-Enable and start the service:
-
-```bash
-sudo systemctl daemon-reload
-sudo systemctl enable mcp-server
-sudo systemctl start mcp-server
-```
-
-## Web Interface Implementation
-
-This section covers how to implement a web-based interface for monitoring and interacting with your MCP server.
-
-### Step 1: Setting Up the Frontend
-
-Create a directory for the frontend:
-
-```bash
-mkdir -p ~/local-mcp-server/web
-cd ~/local-mcp-server/web
-```
-
-Initialize a new Node.js project:
-
-```bash
-npm init -y
-npm install react react-dom next axios tailwindcss postcss autoprefixer
-```
-
-Create a Next.js configuration file `next.config.js`:
-
-```javascript
-module.exports = {
-  reactStrictMode: true,
-  async rewrites() {
-    return [
-      {
-        source: '/api/:path*',
-        destination: 'http://localhost:8000/:path*',
-      },
-    ];
-  },
-};
-```
-
-### Step 2: Creating the Web Interface Components
-
-Create the basic directory structure:
-
-```bash
-mkdir -p pages components styles
-```
-
-Create a basic page `pages/index.js`:
-
-```javascript
-import { useState, useEffect } from 'react';
-import axios from 'axios';
-
-export default function Home() {
-  const [serverInfo, setServerInfo] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  
-  useEffect(() => {
-    const fetchServerInfo = async () => {
-      try {
-        const response = await axios.get('/api/mcp');
-        setServerInfo(response.data);
-        setLoading(false);
-      } catch (err) {
-        setError('Failed to fetch server information');
-        setLoading(false);
-      }
-    };
-    
-    fetchServerInfo();
-  }, []);
-  
-  if (loading) return <div className="container mx-auto p-4">Loading...</div>;
-  if (error) return <div className="container mx-auto p-4 text-red-500">{error}</div>;
-  
-  return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">{serverInfo.server_name} v{serverInfo.server_version}</h1>
-      <p className="mb-4">{serverInfo.server_description}</p>
-      
-      <h2 className="text-xl font-semibold mt-6 mb-2">Available Tools</h2>
-      {serverInfo.tools.length === 0 ? (
-        <p>No tools available</p>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {serverInfo.tools.map((tool) => (
-            <div key={tool.name} className="border rounded p-4">
-              <h3 className="font-bold">{tool.name}</h3>
-              <p className="text-sm">{tool.description}</p>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-```
-
-Create a tool testing component `components/ToolTester.js`:
-
-```javascript
-import { useState } from 'react';
-import axios from 'axios';
-
-export default function ToolTester({ tool }) {
-  const [params, setParams] = useState({});
-  const [result, setResult] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  
-  const handleParamChange = (key, value) => {
-    setParams({
-      ...params,
-      [key]: value
-    });
-  };
-  
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const response = await axios.post(`/api/mcp/tools/${tool.name}`, params);
-      setResult(response.data.result);
-    } catch (err) {
-      setError(err.response?.data?.detail || 'An error occurred');
-    } finally {
-      setLoading(false);
-    }
-  };
-  
-  return (
-    <div className="border rounded p-4 mt-4">
-      <h3 className="font-bold mb-2">Test {tool.name}</h3>
-      
-      <form onSubmit={handleSubmit}>
-        {Object.entries(tool.parameters.properties).map(([key, param]) => (
-          <div key={key} className="mb-2">
-            <label className="block text-sm font-medium">
-              {key} {tool.parameters.required.includes(key) && <span className="text-red-500">*</span>}
-            </label>
-            <input
-              type="text"
-              className="border rounded px-2 py-1 w-full"
-              placeholder={param.description}
-              onChange={(e) => handleParamChange(key, e.target.value)}
-            />
-            <p className="text-xs text-gray-500">{param.description}</p>
-          </div>
-        ))}
-        
-        <button
-          type="submit"
-          disabled={loading}
-          className="bg-blue-500 text-white px-4 py-2 rounded mt-2"
-        >
-          {loading ? 'Running...' : 'Execute'}
-        </button>
-      </form>
-      
-      {error && (
-        <div className="mt-4 p-2 bg-red-100 text-red-700 rounded">
-          {error}
-        </div>
-      )}
-      
-      {result !== null && (
-        <div className="mt-4">
-          <h4 className="font-semibold">Result:</h4>
-          <pre className="bg-gray-100 p-2 rounded overflow-x-auto">
-            {typeof result === 'object' ? JSON.stringify(result, null, 2) : result}
-          </pre>
-        </div>
-      )}
-    </div>
-  );
-}
-```
-
-### Step 3: Setting Up the Web Server
-
-Create a script to start the web server `start-web.sh`:
-
-```bash
-#!/bin/bash
-cd ~/local-mcp-server/web
-npm run dev
-```
-
-Make it executable:
-
-```bash
-chmod +x start-web.sh
-```
-
-Create a systemd service for the web interface:
-
-```bash
-sudo nano /etc/systemd/system/mcp-web.service
-```
-
-Add the following content:
-
-```
-[Unit]
-Description=Local MCP Web Interface
-After=network.target mcp-server.service
-
-[Service]
-User=your_username
-Group=your_username
-WorkingDirectory=/home/your_username/local-mcp-server/web
-ExecStart=/home/your_username/local-mcp-server/web/start-web.sh
-Restart=on-failure
-RestartSec=5s
-
-[Install]
-WantedBy=multi-user.target
-```
-
-Enable and start the service:
-
-```bash
-sudo systemctl daemon-reload
-sudo systemctl enable mcp-web
-sudo systemctl start mcp-web
-```
-
-## Model Integration
-
-This section covers how to integrate advanced models like gemma3:27b and qwq:32b with your local MCP server.
-
-### Integrating gemma3:27b
-
-The gemma3:27b model is a powerful 27 billion parameter model that can be integrated with your local MCP server for enhanced capabilities.
+This project is licensed under the MIT License - see the LICENSE file for details.
 
 #### Prerequisites for gemma3:27b
 
