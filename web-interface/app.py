@@ -67,43 +67,48 @@ DEFAULT_CONFIG = {
             "enabled": True
         },
         {
-            "name": "Slack",
+            "name": "ManusMCP",
             "url": "http://localhost:8003",
             "enabled": True
         },
         {
-            "name": "Twitter",
+            "name": "Slack",
             "url": "http://localhost:8004",
             "enabled": True
         },
         {
-            "name": "Bluesky",
+            "name": "Twitter",
             "url": "http://localhost:8005",
             "enabled": True
         },
         {
-            "name": "Telegram",
+            "name": "Bluesky",
             "url": "http://localhost:8006",
             "enabled": True
         },
         {
-            "name": "Signal",
+            "name": "Telegram",
             "url": "http://localhost:8007",
             "enabled": True
         },
         {
-            "name": "Reddit",
+            "name": "Signal",
             "url": "http://localhost:8008",
             "enabled": True
         },
         {
-            "name": "Notion",
+            "name": "Reddit",
             "url": "http://localhost:8009",
             "enabled": True
         },
         {
-            "name": "Google Drive",
+            "name": "Notion",
             "url": "http://localhost:8010",
+            "enabled": True
+        },
+        {
+            "name": "Google Drive",
+            "url": "http://localhost:8011",
             "enabled": True
         }
     ],
