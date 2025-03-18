@@ -1,0 +1,25 @@
+{
+  "name": "mcp-manager",
+  "module": "src/index.ts",
+  "type": "module",
+  "scripts": {
+    "start": "bun run src/index.ts",
+    "dev": "bun run --watch src/index.ts",
+    "build": "bun build src/index.ts --outdir dist"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/express": "^5.0.0",
+    "@types/node": "^20.17.24"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.7.0",
+    "express": "^4.21.2",
+    "node-nvidia-smi": "^1.0.0",
+    "systeminformation": "^5.21.24",
+    "zod": "^3.22.4"
+  }
+}
