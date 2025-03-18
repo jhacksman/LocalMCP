@@ -1,0 +1,144 @@
+version: '3'
+
+services:
+  # MCP Manager Service
+  mcp-manager:
+    build: ./mcp-services/mcp-manager
+    ports:
+      - "8010:8010"
+    environment:
+      - PORT=8010
+      - LOG_LEVEL=info
+      - TOTAL_VRAM_GB=64
+      - UNLOAD_TIMEOUT_MINUTES=30
+    volumes:
+      - ./mcp-services/mcp-manager:/app
+    restart: unless-stopped
+
+  # Vector Database MCP Service
+  vector-db-mcp:
+    build: ./mcp-services/vector-db-mcp
+    ports:
+      - "8005:8005"
+    environment:
+      - PORT=8005
+      - LOG_LEVEL=info
+      - VECTOR_DB_PATH=./data
+      - EMBEDDING_MODEL=all-MiniLM-L6-v2
+      - VRAM_USAGE_GB=2
+      - MCP_MANAGER_URL=http://mcp-manager:8010
+      - SERVICE_NAME=vector-db-mcp
+      - SERVICE_URL=http://vector-db-mcp:8005
+    volumes:
+      - ./mcp-services/vector-db-mcp:/app
+      - ./mcp-services/vector-db-mcp/data:/app/data
+    depends_on:
+      - mcp-manager
+    restart: unless-stopped
+
+  # Document Processing MCP Service
+  document-mcp:
+    build: ./mcp-services/document-mcp
+    ports:
+      - "8012:8012"
+    environment:
+      - PORT=8012
+      - LOG_LEVEL=info
+      - TEMP_DIR=./temp
+      - OCR_WORKER_THREADS=2
+      - PDF_WORKER_THREADS=2
+      - VRAM_USAGE_GB=1
+      - MCP_MANAGER_URL=http://mcp-manager:8010
+      - SERVICE_NAME=document-mcp
+      - SERVICE_URL=http://document-mcp:8012
+    volumes:
+      - ./mcp-services/document-mcp:/app
+      - ./mcp-services/document-mcp/temp:/app/temp
+    depends_on:
+      - mcp-manager
+    restart: unless-stopped
+
+  # Stable Diffusion MCP Service
+  stable-diffusion-mcp:
+    build: ./mcp-services/stable-diffusion-mcp
+    ports:
+      - "8015:8015"
+    environment:
+      - PORT=8015
+      - LOG_LEVEL=info
+      - MODEL_ID=stabilityai/stable-diffusion-xl-base-1.0
+      - MODEL_CACHE_DIR=./model_cache
+      - VRAM_USAGE_GB=16
+      - ENABLE_4BIT_QUANTIZATION=true
+      - ENABLE_CPU_OFFLOAD=true
+      - MAX_IMAGE_WIDTH=1024
+      - MAX_IMAGE_HEIGHT=1024
+      - MCP_MANAGER_URL=http://mcp-manager:8010
+      - SERVICE_NAME=stable-diffusion-mcp
+      - SERVICE_URL=http://stable-diffusion-mcp:8015
+    volumes:
+      - ./mcp-services/stable-diffusion-mcp:/app
+      - ./mcp-services/stable-diffusion-mcp/model_cache:/app/model_cache
+    depends_on:
+      - mcp-manager
+    restart: unless-stopped
+
+  # SQL MCP Service
+  sql-mcp:
+    build: ./mcp-services/sql
+    ports:
+      - "8020:8020"
+    environment:
+      - PORT=8020
+      - LOG_LEVEL=info
+      - DATABASE_PATH=./database.db
+      - VRAM_USAGE_GB=1
+      - MCP_MANAGER_URL=http://mcp-manager:8010
+      - SERVICE_NAME=sql-mcp
+      - SERVICE_URL=http://sql-mcp:8020
+    volumes:
+      - ./mcp-services/sql:/app
+      - ./mcp-services/sql/database.db:/app/database.db
+    depends_on:
+      - mcp-manager
+    restart: unless-stopped
+
+  # Venice MCP Service
+  venice-mcp:
+    build: ./mcp-services/venice-mcp
+    ports:
+      - "8025:8025"
+    environment:
+      - PORT=8025
+      - LOG_LEVEL=info
+      - VENICE_API_BASE_URL=https://api.venice.ai/api/v1
+      - VENICE_API_KEY=${VENICE_API_KEY}
+      - MODEL=deepseek-r1-671b
+      - VRAM_USAGE_GB=0
+      - MCP_MANAGER_URL=http://mcp-manager:8010
+      - SERVICE_NAME=venice-mcp
+      - SERVICE_URL=http://venice-mcp:8025
+      - ENABLE_THINK_TAGS_FILTER=true
+    volumes:
+      - ./mcp-services/venice-mcp:/app
+    depends_on:
+      - mcp-manager
+    restart: unless-stopped
+
+  # Web Interface
+  web-interface:
+    build: ./web-interface
+    ports:
+      - "8000:8000"
+    environment:
+      - MCP_MANAGER_URL=http://mcp-manager:8010
+    volumes:
+      - ./web-interface:/app
+    depends_on:
+      - mcp-manager
+      - vector-db-mcp
+      - document-mcp
+      - stable-diffusion-mcp
+      - sql-mcp
+      - venice-mcp
+    restart: unless-stopped
