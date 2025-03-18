@@ -1,0 +1,3 @@
+2025-03-18 03:52:09,034 - sql_mcp - INFO - Executing SQL query: SELECT * FROM employees LIMIT 3
+2025-03-18 03:52:14,991 - sql_mcp - INFO - Getting database schema
+2025-03-18 03:52:20,249 - sql_mcp - INFO - Executing SQL query: SELECT department, COUNT(*) as employee_count FROM employees GROUP BY department
