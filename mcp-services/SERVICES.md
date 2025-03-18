@@ -566,7 +566,7 @@ The Venice MCP service provides an OpenAI-compatible API for accessing Venice.ai
 |--------|-------------|---------|----------|
 | PORT | HTTP server port | 8005 | No |
 | LOG_LEVEL | Logging level (debug, info, warn, error) | info | No |
-| VENICE_API_KEY | Venice.ai API key | - | Yes |
+| VENICE_API_KEY | Venice.ai API key (set in .env file) | - | Yes |
 | VENICE_API_BASE | Venice.ai API base URL | https://api.venice.ai/api/v1 | No |
 | VENICE_MODEL | Venice.ai model to use | deepseek-r1-671b | No |
 | FILTER_THINK_TAGS | Whether to filter `<think>` tags | true | No |
