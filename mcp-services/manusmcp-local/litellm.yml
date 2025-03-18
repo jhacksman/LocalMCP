@@ -1,0 +1,13 @@
+model_list:
+  - model_name: primary # dont change
+    litellm_params:
+      model: ${PRIMARY_MODEL:-anthropic/claude-3-7-latest}
+      api_key: "os.environ/ANTHROPIC_API_KEY"
+  - model_name: secondary # dont change
+    litellm_params:
+      model: ${SECONDARY_MODEL:-openai/gpt-4o-mini}
+      api_key: "os.environ/OPENAI_API_KEY"
+litellm_settings:
+    drop_params: true
+    api_base: 
+      openai: ${OPENAI_BASE_URL:-https://api.openai.com/v1}
