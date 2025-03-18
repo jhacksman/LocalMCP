@@ -62,8 +62,18 @@ DEFAULT_CONFIG = {
             "enabled": True
         },
         {
-            "name": "Slack",
+            "name": "SQL",
             "url": "http://localhost:8002",
+            "enabled": True
+        },
+        {
+            "name": "ManusMCP",
+            "url": "http://localhost:8003",
+            "enabled": True
+        },
+        {
+            "name": "Slack",
+            "url": "http://localhost:8004",
             "enabled": True
         },
         {
