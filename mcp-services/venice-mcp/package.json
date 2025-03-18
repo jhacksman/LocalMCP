@@ -1,14 +1,22 @@
 {
   "name": "venice-mcp",
   "version": "1.0.0",
-  "description": "MCP-compatible server for Venice.ai API with think tags filter",
-  "main": "venice-mcp-wrapper.js",
+  "description": "MCP server for Venice.ai API with think tags filter",
+  "main": "src/index.ts",
   "scripts": {
-    "start": "node venice-mcp-wrapper.js",
-    "test": "node test-mcp-wrapper.js"
+    "start": "ts-node src/index.ts",
+    "test": "node test-think-tags-filter.js"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.7.0",
     "axios": "^1.6.7",
-    "express": "^4.21.2"
+    "express": "^4.21.2",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.11.28",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
   }
 }

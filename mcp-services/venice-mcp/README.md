@@ -1,109 +1,82 @@
 # Venice.ai MCP Server
 
-A Model Context Protocol (MCP) compatible server for Venice.ai's OpenAI-compatible API with <think> tags filtering.
+This project implements a Model Context Protocol (MCP) server for Venice.ai's OpenAI-compatible API. It includes a special filter to remove `<think>` tags from the model's responses, providing clean and usable content.
 
 ## Features
 
-- Removes <think> tags from Venice.ai API responses
-- Exposes a clean API endpoint for chat completions
-- Configurable model selection
-- Health check endpoint
+- MCP-compatible server for Venice.ai API
+- Automatic removal of `<think>` tags from responses
+- TypeScript implementation with Zod schema validation
+- Express HTTP server for testing and debugging
 
 ## Installation
 
-```bash
-# Clone the repository
-git clone https://github.com/jhacksman/LocalMCP.git
-cd LocalMCP/mcp-services/venice-mcp
-
-# Install dependencies
-npm install
-```
-
-## Configuration
-
-The server can be configured using environment variables:
-
-- `VENICE_API_BASE_URL`: Base URL for Venice.ai API (default: "https://api.venice.ai/api/v1")
-- `VENICE_API_KEY`: Your Venice.ai API key
-- `VENICE_MODEL`: Default model to use (default: "deepseek-r1-671b")
-- `PORT`: Port to run the server on (default: 3000)
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Create a `.env` file based on `.env.example`:
+   ```bash
+   cp .env.example .env
+   ```
+4. Add your Venice.ai API key to the `.env` file
 
 ## Usage
 
+### Start the MCP Server
+
 ```bash
-# Start the server
+npm start
+```
+
+This will start the MCP server using stdio transport, which is compatible with MCP clients.
+
+### Test the Think Tags Filter
+
+```bash
+npm test
+```
+
+This will run the test suite for the think tags filter to ensure it correctly removes all types of think tags from responses.
+
+### Test with HTTP Server
+
+```bash
 node venice-mcp-server.js
 ```
 
-## API Endpoints
-
-### Health Check
-
-```
-GET /health
-```
-
-Returns the status of the server.
-
-### Chat Completion
-
-```
-POST /api/chat
-```
-
-Request body:
-```json
-{
-  "prompt": "Tell me a joke about programming",
-  "system_prompt": "You are a helpful assistant",
-  "model": "deepseek-r1-671b",
-  "max_tokens": 1000
-}
-```
-
-Response:
-```json
-{
-  "original": "<think>Original response with think tags</think>",
-  "cleaned": "Cleaned response without think tags",
-  "model": "deepseek-r1-671b",
-  "usage": {
-    "prompt_tokens": 10,
-    "total_tokens": 100,
-    "completion_tokens": 90
-  }
-}
-```
-
-## <think> Tags Filter
-
-The server automatically removes <think> tags from Venice.ai API responses. These tags contain the model's internal reasoning process and are not meant to be shown to end users.
-
-The filter handles:
-- Properly closed <think> tags
-- Unclosed <think> tags
-- Multiple <think> tags
-- Content entirely within <think> tags
-
-## Testing
-
-To test the <think> tags filter:
+This will start an HTTP server on port 3000 (or the port specified in your `.env` file). You can then test the API using:
 
 ```bash
-node test-think-tags-filter.js
+curl -X POST http://localhost:3000/api/chat \
+  -H "Content-Type: application/json" \
+  -d '{"prompt":"Tell me a joke about programming.","system_prompt":"You are a helpful assistant.","max_tokens":100}'
 ```
 
-## Integration with MCP
+## Think Tags Filter
 
-This server can be integrated with the Model Context Protocol (MCP) to provide a standardized interface for AI tools.
+The Venice.ai API sometimes includes `<think>` tags in responses, which contain the model's internal reasoning. This implementation automatically removes these tags to provide clean, usable content.
 
-Example MCP integration:
+The filter handles:
+- Nested `<think>` tags
+- Unclosed `<think>` tags
+- Content entirely within `<think>` tags
 
-```javascript
-const { FastMCP } = require("@modelcontextprotocol/sdk");
-const mcp = new FastMCP("Venice.ai MCP Server");
+## Environment Variables
 
+| Variable | Description | Default |
+|----------|-------------|---------|
+| VENICE_API_BASE_URL | Base URL for Venice.ai API | https://api.venice.ai/api/v1 |
+| VENICE_API_KEY | Your Venice.ai API key | (required) |
+| VENICE_MODEL | Default model to use | deepseek-r1-671b |
+| PORT | Port for HTTP server | 3000 |
+
+## MCP Tool Schema
+
+The MCP server exposes a single tool:
+
+```typescript
 mcp.tool(
   "chat_completion",
   {
@@ -113,11 +86,7 @@ mcp.tool(
     max_tokens: z.number().optional()
   },
   async ({ prompt, system_prompt, model, max_tokens }) => {
-    // Call the Venice.ai API and filter <think> tags
-    // ...
-    return {
-      content: [{ type: "text", text: cleanedContent }]
-    };
+    // Implementation
   }
 );
 ```
