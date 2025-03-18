@@ -1,0 +1,33 @@
+# Manus-Open MCP Compatibility Todo List
+
+## Browser Tools
+- [ ] action_browser_click
+- [ ] action_browser_console_exec
+- [ ] action_browser_console_view
+- [ ] action_browser_input
+- [ ] action_browser_move_mouse
+- [ ] action_browser_navigate
+- [ ] action_browser_press_key
+- [ ] action_browser_restart
+- [ ] action_browser_screenshot
+- [ ] action_browser_scroll_down
+- [ ] action_browser_scroll_up
+- [ ] action_browser_select_option
+- [ ] action_browser_view
+
+## Terminal Tools
+- [ ] terminal_execute_command
+- [ ] terminal_send_control
+- [ ] terminal_send_key
+- [ ] terminal_send_line
+- [ ] terminal_kill_process
+- [ ] terminal_reset
+
+## Text Editor Tools
+- [ ] text_editor_view_dir
+- [ ] text_editor_view
+- [ ] text_editor_str_replace
+- [ ] text_editor_find_content
+- [ ] text_editor_find_file
+- [ ] text_editor_read_file
+- [ ] text_editor_write_file
