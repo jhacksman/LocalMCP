@@ -77,13 +77,28 @@ DEFAULT_CONFIG = {
             "enabled": True
         },
         {
-            "name": "Twitter",
+            "name": "Venice MCP",
             "url": "http://localhost:8005",
             "enabled": True
         },
         {
-            "name": "Bluesky",
+            "name": "Vector DB MCP",
             "url": "http://localhost:8006",
+            "enabled": True
+        },
+        {
+            "name": "Document MCP",
+            "url": "http://localhost:8012",
+            "enabled": True
+        },
+        {
+            "name": "Stable Diffusion MCP",
+            "url": "http://localhost:8015",
+            "enabled": True
+        },
+        {
+            "name": "MCP Manager",
+            "url": "http://localhost:8010",
             "enabled": True
         },
         {
@@ -102,11 +117,6 @@ DEFAULT_CONFIG = {
             "enabled": True
         },
         {
-            "name": "Notion",
-            "url": "http://localhost:8010",
-            "enabled": True
-        },
-        {
             "name": "Google Drive",
             "url": "http://localhost:8011",
             "enabled": True
@@ -116,12 +126,14 @@ DEFAULT_CONFIG = {
         {
             "name": "Gemma3-27B",
             "url": "http://localhost:7000",
-            "enabled": True
+            "enabled": True,
+            "vram_usage_gb": 27
         },
         {
             "name": "QWQ-32B",
             "url": "http://localhost:7001",
-            "enabled": True
+            "enabled": True,
+            "vram_usage_gb": 32
         }
     ]
 }
@@ -271,7 +283,7 @@ async def startup_event():
 
                 <h2>System Overview</h2>
                 <div class="row">
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <div class="card">
                             <div class="card-body">
                                 <h5 class="card-title">Services</h5>
@@ -279,7 +291,7 @@ async def startup_event():
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <div class="card">
                             <div class="card-body">
                                 <h5 class="card-title">Models</h5>
@@ -287,11 +299,22 @@ async def startup_event():
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <div class="card">
                             <div class="card-body">
                                 <h5 class="card-title">Tools</h5>
                                 <p class="card-text">{{ total_tools }} available</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">VRAM Usage</h5>
+                                <p class="card-text">{{ total_vram_usage }} / 64 GB</p>
+                                <div class="progress">
+                                    <div class="progress-bar {% if total_vram_usage > 58 %}bg-danger{% elif total_vram_usage > 48 %}bg-warning{% else %}bg-success{% endif %}" role="progressbar" style="width: {{ (total_vram_usage / 64) * 100 }}%" aria-valuenow="{{ total_vram_usage }}" aria-valuemin="0" aria-valuemax="64"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -469,6 +492,7 @@ async def index(request: Request):
     # Check service health and get tools
     services = []
     total_tools = 0
+    total_vram_usage = 0
     
     for service in config["services"]:
         if not service["enabled"]:
@@ -480,11 +504,35 @@ async def index(request: Request):
         
         total_tools += len(tools)
         
+        # Check if this is an MCP service with VRAM usage
+        vram_usage = 0
+        if healthy and service["name"] in ["MCP Manager", "Vector DB MCP", "Document MCP", "Stable Diffusion MCP", "Venice MCP"]:
+            try:
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(f"{service['url']}/vram_usage", timeout=2) as response:
+                        if response.status == 200:
+                            vram_data = await response.json()
+                            vram_usage = vram_data.get("vram_usage_gb", 0)
+                            total_vram_usage += vram_usage
+            except:
+                # If VRAM usage endpoint is not available, use default values
+                if service["name"] == "Vector DB MCP":
+                    vram_usage = 2
+                elif service["name"] == "Document MCP":
+                    vram_usage = 1
+                elif service["name"] == "Stable Diffusion MCP":
+                    vram_usage = 8
+                elif service["name"] == "Venice MCP":
+                    vram_usage = 0
+                
+                total_vram_usage += vram_usage
+        
         services.append({
             "name": service["name"],
             "url": service["url"],
             "healthy": healthy,
-            "tools": tools
+            "tools": tools,
+            "vram_usage": vram_usage
         })
     
     # Check model health and get info
@@ -497,18 +545,28 @@ async def index(request: Request):
         healthy = await check_model_health(model)
         info = await get_model_info(model) if healthy else None
         
+        # Add VRAM usage from models
+        vram_usage = model.get("vram_usage_gb", 0)
+        if healthy:
+            total_vram_usage += vram_usage
+        
         models.append({
             "name": model["name"],
             "url": model["url"],
             "healthy": healthy,
-            "info": info
+            "info": info,
+            "vram_usage": vram_usage
         })
+    
+    # Round to 1 decimal place
+    total_vram_usage = round(total_vram_usage, 1)
     
     return templates.TemplateResponse("index.html", {
         "request": request,
         "services": services,
         "models": models,
-        "total_tools": total_tools
+        "total_tools": total_tools,
+        "total_vram_usage": total_vram_usage
     })
 
 @app.websocket("/ws")
@@ -569,15 +627,42 @@ async def get_status():
     
     # Check service health
     services = []
+    total_vram_usage = 0
+    
     for service in config["services"]:
         if not service["enabled"]:
             continue
         
         healthy = await check_service_health(service)
+        
+        # Check if this is an MCP service with VRAM usage
+        vram_usage = 0
+        if healthy and service["name"] in ["MCP Manager", "Vector DB MCP", "Document MCP", "Stable Diffusion MCP", "Venice MCP"]:
+            try:
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(f"{service['url']}/vram_usage", timeout=2) as response:
+                        if response.status == 200:
+                            vram_data = await response.json()
+                            vram_usage = vram_data.get("vram_usage_gb", 0)
+                            total_vram_usage += vram_usage
+            except:
+                # If VRAM usage endpoint is not available, use default values
+                if service["name"] == "Vector DB MCP":
+                    vram_usage = 2
+                elif service["name"] == "Document MCP":
+                    vram_usage = 1
+                elif service["name"] == "Stable Diffusion MCP":
+                    vram_usage = 8
+                elif service["name"] == "Venice MCP":
+                    vram_usage = 0
+                
+                total_vram_usage += vram_usage
+        
         services.append({
             "name": service["name"],
             "url": service["url"],
-            "healthy": healthy
+            "healthy": healthy,
+            "vram_usage": vram_usage
         })
     
     # Check model health
@@ -587,15 +672,27 @@ async def get_status():
             continue
         
         healthy = await check_model_health(model)
+        
+        # Add VRAM usage from models
+        vram_usage = model.get("vram_usage_gb", 0)
+        if healthy:
+            total_vram_usage += vram_usage
+        
         models.append({
             "name": model["name"],
             "url": model["url"],
-            "healthy": healthy
+            "healthy": healthy,
+            "vram_usage": vram_usage
         })
+    
+    # Round to 1 decimal place
+    total_vram_usage = round(total_vram_usage, 1)
     
     return {
         "services": services,
         "models": models,
+        "total_vram_usage": total_vram_usage,
+        "max_vram": 64,
         "timestamp": time.time()
     }
 
