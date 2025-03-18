@@ -1,0 +1,14 @@
+{
+  "name": "venice-mcp",
+  "version": "1.0.0",
+  "description": "MCP-compatible server for Venice.ai API with think tags filter",
+  "main": "venice-mcp-wrapper.js",
+  "scripts": {
+    "start": "node venice-mcp-wrapper.js",
+    "test": "node test-mcp-wrapper.js"
+  },
+  "dependencies": {
+    "axios": "^1.6.7",
+    "express": "^4.21.2"
+  }
+}
