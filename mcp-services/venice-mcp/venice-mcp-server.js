@@ -1,10 +1,3 @@
-/**
- * Venice.ai MCP Server Wrapper
- * 
- * This server implements a simple MCP-compatible wrapper for Venice.ai's OpenAI-compatible API.
- * It filters out <think> tags from responses to provide clean, usable content.
- */
-
 const axios = require('axios');
 const express = require('express');
 const app = express();
@@ -57,8 +50,8 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', message: 'Venice.ai MCP Server is running' });
 });
 
-// MCP-compatible chat completion endpoint
-app.post('/mcp/chat', async (req, res) => {
+// Chat completion endpoint
+app.post('/api/chat', async (req, res) => {
   try {
     const { prompt, system_prompt = "You are a helpful assistant.", model = VENICE_MODEL, max_tokens = 1000 } = req.body;
     
@@ -93,19 +86,11 @@ app.post('/mcp/chat', async (req, res) => {
     console.log('Original response:', originalContent);
     console.log('Cleaned response:', cleanedContent);
     
-    // Return MCP-compatible response format
     res.json({
-      content: [
-        {
-          type: "text",
-          text: cleanedContent
-        }
-      ],
-      metadata: {
-        model: model,
-        usage: response.data.usage,
-        original_content: originalContent
-      }
+      original: originalContent,
+      cleaned: cleanedContent,
+      model: model,
+      usage: response.data.usage
     });
   } catch (error) {
     console.error('Error:', error.response ? error.response.data : error.message);
